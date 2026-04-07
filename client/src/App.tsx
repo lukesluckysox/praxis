@@ -1,3 +1,4 @@
+import React from "react";
 import { Switch, Route, Router } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -29,14 +30,48 @@ function AppRoutes() {
   );
 }
 
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const [status, setStatus] = React.useState<'loading' | 'authed' | 'unauthed'>('loading');
+
+  React.useEffect(() => {
+    fetch('/api/auth/me')
+      .then(r => {
+        if (r.ok) setStatus('authed');
+        else setStatus('unauthed');
+      })
+      .catch(() => setStatus('unauthed'));
+  }, []);
+
+  if (status === 'loading') {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#191b2a', color: '#8D99AE', fontFamily: 'sans-serif' }}>
+        Loading…
+      </div>
+    );
+  }
+
+  if (status === 'unauthed') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#191b2a', color: '#F4F5F8', fontFamily: 'sans-serif', gap: '1rem' }}>
+        <p style={{ color: '#8D99AE', fontSize: '0.9rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Authentication required</p>
+        <p style={{ color: '#F4F5F8', fontSize: '1rem' }}>Open Praxis through <a href="https://lumen-os.up.railway.app" style={{ color: '#FFD166', textDecoration: 'none' }}>Lumen</a></p>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <Router hook={useHashLocation}>
-          <AppRoutes />
-        </Router>
-        <Toaster />
+        <AuthGate>
+          <Router hook={useHashLocation}>
+            <AppRoutes />
+          </Router>
+          <Toaster />
+        </AuthGate>
       </ThemeProvider>
     </QueryClientProvider>
   );

@@ -20,12 +20,14 @@ export const experiments = sqliteTable("experiments", {
   tags: text("tags").notNull().default("[]"), // JSON string[]
   createdAt: integer("created_at").notNull(),
   completedAt: integer("completed_at"),
+  userId: text("user_id").notNull().default("1"),
 });
 
 export const insertExperimentSchema = createInsertSchema(experiments).omit({
   id: true,
   createdAt: true,
   completedAt: true,
+  userId: true,
 });
 
 export type InsertExperiment = z.infer<typeof insertExperimentSchema>;
@@ -41,11 +43,13 @@ export const doctrines = sqliteTable("doctrines", {
   sourceExperimentIds: text("source_experiment_ids").notNull().default("[]"), // JSON number[]
   notes: text("notes").notNull().default(""),
   createdAt: integer("created_at").notNull(),
+  userId: text("user_id").notNull().default("1"),
 });
 
 export const insertDoctrineSchema = createInsertSchema(doctrines).omit({
   id: true,
   createdAt: true,
+  userId: true,
 });
 
 export type InsertDoctrine = z.infer<typeof insertDoctrineSchema>;
@@ -62,11 +66,13 @@ export const tensions = sqliteTable("tensions", {
   isPrimary: integer("is_primary", { mode: "boolean" }).notNull().default(false),
   strength: integer("strength").notNull().default(5), // 1–10
   createdAt: integer("created_at").notNull(),
+  userId: text("user_id").notNull().default("1"),
 });
 
 export const insertTensionSchema = createInsertSchema(tensions).omit({
   id: true,
   createdAt: true,
+  userId: true,
 });
 
 export type InsertTension = z.infer<typeof insertTensionSchema>;

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from "wouter";
 import { useTheme } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
@@ -38,6 +39,64 @@ function PraxisLogo() {
         opacity="0.6"
       />
     </svg>
+  );
+}
+
+type SensitivityLevel = 'low' | 'medium' | 'high';
+
+function SensitivityControl() {
+  const [sensitivity, setSensitivity] = useState<SensitivityLevel>('medium');
+
+  useEffect(() => {
+    fetch('/api/settings/sensitivity')
+      .then(r => r.json())
+      .then((d: { sensitivity?: string }) => {
+        if (d.sensitivity === 'low' || d.sensitivity === 'medium' || d.sensitivity === 'high') {
+          setSensitivity(d.sensitivity);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const update = async (val: SensitivityLevel) => {
+    setSensitivity(val);
+    try {
+      await fetch('/api/settings/sensitivity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sensitivity: val }),
+      });
+    } catch {}
+  };
+
+  const pills: { val: SensitivityLevel; label: string }[] = [
+    { val: 'low', label: 'LOW' },
+    { val: 'medium', label: 'MED' },
+    { val: 'high', label: 'HIGH' },
+  ];
+
+  return (
+    <div className="px-4 pb-3">
+      <p className="text-[9px] text-muted-foreground/40 font-mono uppercase tracking-wider mb-2">
+        Loop Sensitivity
+      </p>
+      <div className="flex gap-1">
+        {pills.map(({ val, label }) => (
+          <button
+            key={val}
+            onClick={() => update(val)}
+            className={cn(
+              'flex-1 text-[9px] font-mono uppercase tracking-wider py-1.5 rounded border transition-all duration-150',
+              sensitivity === val
+                ? 'border-[#FFD166] text-[#FFD166] bg-[#FFD166]/8'
+                : 'border-border text-muted-foreground/30 hover:text-muted-foreground/60 hover:border-muted-foreground/30'
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -104,6 +163,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Button>
           </Link>
         </div>
+
+        {/* Sensitivity */}
+        <SensitivityControl />
 
         {/* Footer */}
         <div className="px-4 py-3 border-t border-border flex items-center justify-between">

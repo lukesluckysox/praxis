@@ -35,9 +35,58 @@ export function registerRoutes(httpServer: Server, app: Express) {
     req.session.destroy(() => res.json({ ok: true }));
   });
 
+  // ─── Internal: push from Lumen epistemic queue ───────────────────────────────
+  app.post('/api/internal/from-lumen', (req: any, res: any) => {
+    const token = req.headers['x-lumen-internal-token'];
+    const expected = process.env.JWT_SECRET || '4gLtMuM38OkYGIpM1SCD+QQLgBPqgrKFB3aZeObkaqobhpeFOCV3NkAMW2dyOS17';
+    if (!token || token !== expected) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const {
+      title,
+      hypothesis,
+      design = 'Auto-generated from epistemic queue. Review and refine to structure your experiment.',
+      source = 'liminal',
+      status = 'active',
+      experimentConstraint = '',
+      observation = '',
+      meaningExtraction = '',
+      tags = '[]',
+      userId = '1',
+    } = req.body as Record<string, any>;
+
+    if (!hypothesis) {
+      return res.status(400).json({ error: 'hypothesis is required' });
+    }
+
+    try {
+      const trialNumber = storage.getNextTrialNumber(String(userId));
+      const experiment = storage.createExperiment(
+        {
+          title: title || hypothesis.slice(0, 200),
+          trialNumber,
+          status,
+          source,
+          hypothesis,
+          design,
+          experimentConstraint,
+          observation,
+          meaningExtraction,
+          tags,
+        },
+        String(userId)
+      );
+      return res.status(201).json(experiment);
+    } catch (err: any) {
+      console.error('[praxis/internal/from-lumen]', err);
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── Auth guard for all /api/* except /api/auth/* ─────────────────────────
   app.use('/api', (req: any, res: any, next: any) => {
-    if (req.path.startsWith('/auth/') || req.path === '/health') return next();
+    if (req.path.startsWith('/auth/') || req.path === '/health' || req.path.startsWith('/internal/')) return next();
     requireAuth(req, res, next);
   });
 

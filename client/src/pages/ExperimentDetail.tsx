@@ -13,6 +13,47 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
 
+// ── Provenance breadcrumb ─────────────────────────────────────────────────
+
+const SOURCE_BORDER: Record<string, string> = {
+  parallax: "#4d8c9e",
+  liminal: "#9c8654",
+  lumen_push: "#FFD166",
+};
+
+const SOURCE_LABEL: Record<string, string> = {
+  parallax: "Parallax",
+  liminal: "Liminal",
+  lumen_push: "Lumen",
+};
+
+function ProvenanceBreadcrumb({ experiment }: { experiment: Experiment }) {
+  if (experiment.source === "manual") return null;
+  const borderColor = SOURCE_BORDER[experiment.source] ?? "#888";
+  const sourceLabel = SOURCE_LABEL[experiment.source] ?? experiment.source;
+  return (
+    <div
+      className="mb-6 pl-4 py-3 pr-4 rounded-r-md bg-muted/30 border-l-2"
+      style={{ borderLeftColor: borderColor }}
+    >
+      <p className="text-xs font-medium text-foreground/80 mb-0.5">
+        Origin: {sourceLabel}
+      </p>
+      {experiment.sourceDescription && (
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {experiment.sourceDescription}
+        </p>
+      )}
+      <p className="text-xs text-muted-foreground/50 italic mt-1.5">
+        Proposed {formatDate(experiment.createdAt)}
+        {experiment.status !== "proposed" && experiment.status !== "dismissed" && (
+          <> · Accepted and moved to {experiment.status}</>
+        )}
+      </p>
+    </div>
+  );
+}
+
 interface Phase {
   key: "hypothesis" | "design" | "experimentConstraint" | "observation" | "meaningExtraction";
   label: string;
@@ -154,6 +195,9 @@ export default function ExperimentDetail() {
           All Experiments
         </button>
       </Link>
+
+      {/* Provenance breadcrumb — shown for non-manual experiments */}
+      <ProvenanceBreadcrumb experiment={experiment} />
 
       {/* Header */}
       <div className="mb-8">

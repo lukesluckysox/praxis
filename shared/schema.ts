@@ -8,10 +8,12 @@ export const experiments = sqliteTable("experiments", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   trialNumber: integer("trial_number").notNull(),
   title: text("title").notNull(),
-  // 'active' | 'observing' | 'completed' | 'archived'
+  // 'proposed' | 'active' | 'observing' | 'completed' | 'archived' | 'dismissed'
   status: text("status").notNull().default("active"),
-  // 'liminal' | 'parallax' | 'manual'
+  // 'liminal' | 'parallax' | 'lumen_push' | 'manual'
   source: text("source").notNull().default("manual"),
+  // Human-readable explanation of how/why this experiment was proposed (loop-generated experiments only)
+  sourceDescription: text("source_description"),
   hypothesis: text("hypothesis").notNull(),
   design: text("design").notNull(),
   experimentConstraint: text("experiment_constraint").notNull().default(""),

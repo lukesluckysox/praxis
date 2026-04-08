@@ -82,11 +82,13 @@ export function registerRoutes(httpServer: Server, app: Express) {
 
       try {
         const trialNumber = storage.getNextTrialNumber(String(lumenUserId));
+        const dimensions = (pattern.dimensions || []).join(', ') || 'your data';
+        const sourceDescription = `Parallax detected a ${pattern.type} pattern in your ${dimensions} data. Confidence: ${Math.round(pattern.confidence * 100)}%.`;
         storage.createExperiment(
           {
             title: `Parallax: ${pattern.type.replace(/_/g, ' ')} — ${(pattern.dimensions || []).join(', ') || 'detected pattern'}`.slice(0, 200),
             trialNumber,
-            status: 'active',
+            status: 'proposed',
             source: 'parallax',
             hypothesis,
             design,
@@ -94,6 +96,7 @@ export function registerRoutes(httpServer: Server, app: Express) {
             observation: '',
             meaningExtraction: '',
             tags: '[]',
+            sourceDescription,
           },
           String(lumenUserId)
         );
@@ -118,8 +121,7 @@ export function registerRoutes(httpServer: Server, app: Express) {
       title,
       hypothesis,
       design = 'Auto-generated from epistemic queue. Review and refine to structure your experiment.',
-      source = 'liminal',
-      status = 'active',
+      source = 'lumen_push',
       experimentConstraint = '',
       observation = '',
       meaningExtraction = '',
@@ -137,7 +139,7 @@ export function registerRoutes(httpServer: Server, app: Express) {
         {
           title: title || hypothesis.slice(0, 200),
           trialNumber,
-          status,
+          status: 'proposed',
           source,
           hypothesis,
           design,
@@ -145,6 +147,7 @@ export function registerRoutes(httpServer: Server, app: Express) {
           observation,
           meaningExtraction,
           tags,
+          sourceDescription: 'A Lumen epistemic signal suggested this hypothesis for testing.',
         },
         String(userId)
       );

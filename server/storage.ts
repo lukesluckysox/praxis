@@ -60,6 +60,9 @@ try { sqlite.exec("ALTER TABLE experiments ADD COLUMN user_id TEXT NOT NULL DEFA
 try { sqlite.exec("ALTER TABLE doctrines ADD COLUMN user_id TEXT NOT NULL DEFAULT '1'"); } catch {}
 try { sqlite.exec("ALTER TABLE tensions ADD COLUMN user_id TEXT NOT NULL DEFAULT '1'"); } catch {}
 
+// Add source_description column (no-op if already added)
+try { sqlite.exec("ALTER TABLE experiments ADD COLUMN source_description TEXT"); } catch {}
+
 // User table for SSO
 sqlite.exec(`
   CREATE TABLE IF NOT EXISTS praxis_users (

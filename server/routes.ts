@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { requireAuth, getUserId, verifyLumenToken } from "./auth";
 import { insertExperimentSchema, insertDoctrineSchema, insertTensionSchema } from "@shared/schema";
 import { z } from "zod";
+import { emitExperimentCompleted, emitDoctrineCrystallized, emitTensionDiscovered } from "./lumenEmitter";
 
 export function registerRoutes(httpServer: Server, app: Express) {
   // ── Auth endpoints ──────────────────────────────────────────────────────
@@ -33,6 +34,76 @@ export function registerRoutes(httpServer: Server, app: Express) {
 
   app.post('/api/auth/logout', (req: any, res: any) => {
     req.session.destroy(() => res.json({ ok: true }));
+  });
+
+  // ─── Internal: push from Parallax pattern detection ───────────────────────
+  app.post('/api/internal/from-parallax', (req: any, res: any) => {
+    const token = req.headers['x-lumen-internal-token'];
+    const expected = process.env.JWT_SECRET || '4gLtMuM38OkYGIpM1SCD+QQLgBPqgrKFB3aZeObkaqobhpeFOCV3NkAMW2dyOS17';
+    if (!token || token !== expected) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { lumenUserId = '1', patterns = [] } = req.body as {
+      lumenUserId?: string;
+      patterns?: Array<{
+        type: string;
+        description: string;
+        dimensions?: string[];
+        confidence: number;
+      }>;
+    };
+
+    let experimentsCreated = 0;
+
+    for (const pattern of patterns) {
+      if (pattern.confidence <= 0.6) continue;
+
+      let hypothesis: string;
+      let design: string;
+
+      if (pattern.type === 'trend') {
+        const dimension = (pattern.dimensions && pattern.dimensions[0]) || 'relevant dimension';
+        hypothesis = `If I counteract the trend in ${dimension}, my ${dimension} will shift`;
+        design = `Identify the specific behavior driving the ${dimension} trend and deliberately introduce the opposite behavior for a defined period. Record what shifts.`;
+      } else if (pattern.type === 'oscillation') {
+        const dimension = (pattern.dimensions && pattern.dimensions[0]) || 'this area';
+        hypothesis = `There is a specific trigger causing the oscillation in ${dimension}`;
+        design = `Track the conditions before each oscillation in ${dimension} — time of day, social context, energy level, recent events. Look for the repeating variable.`;
+      } else if (pattern.type === 'identity_discrepancy') {
+        const dimension = (pattern.dimensions && pattern.dimensions[0]) || 'self-perception';
+        hypothesis = `My stated identity in ${dimension} diverges from my revealed behavior`;
+        design = `For one week, log each instance where your actions in ${dimension} align or conflict with how you describe yourself. Note the gap without judgment.`;
+      } else {
+        // Generic fallback for unknown pattern types
+        hypothesis = pattern.description || `Investigating detected ${pattern.type} pattern`;
+        design = `Observe and document this pattern in detail: ${pattern.description || pattern.type}. Note when it appears, under what conditions, and what it might reveal.`;
+      }
+
+      try {
+        const trialNumber = storage.getNextTrialNumber(String(lumenUserId));
+        storage.createExperiment(
+          {
+            title: `Parallax: ${pattern.type.replace(/_/g, ' ')} — ${(pattern.dimensions || []).join(', ') || 'detected pattern'}`.slice(0, 200),
+            trialNumber,
+            status: 'active',
+            source: 'parallax',
+            hypothesis,
+            design,
+            experimentConstraint: '',
+            observation: '',
+            meaningExtraction: '',
+            tags: '[]',
+          },
+          String(lumenUserId)
+        );
+        experimentsCreated++;
+      } catch (err: any) {
+        console.error('[praxis/internal/from-parallax] createExperiment error:', err);
+      }
+    }
+
+    return res.status(201).json({ experimentsCreated });
   });
 
   // ─── Internal: push from Lumen epistemic queue ───────────────────────────────
@@ -114,7 +185,7 @@ export function registerRoutes(httpServer: Server, app: Express) {
     res.status(201).json(experiment);
   });
 
-  app.patch("/api/experiments/:id", (req: any, res: any) => {
+  app.patch("/api/experiments/:id", async (req: any, res: any) => {
     const id = parseInt(req.params.id);
     const partial = insertExperimentSchema.partial().safeParse(req.body);
     if (!partial.success) return res.status(400).json({ error: partial.error.flatten() });
@@ -123,6 +194,17 @@ export function registerRoutes(httpServer: Server, app: Express) {
     if ("completedAt" in body) extra.completedAt = body.completedAt as number | null;
     const updated = storage.updateExperiment(id, { ...partial.data, ...extra }, getUserId(req));
     if (!updated) return res.status(404).json({ error: "Not found" });
+    // Fire-and-forget: emit to Lumen when experiment is marked completed with meaning extraction
+    if (partial.data.status === "completed" && updated.meaningExtraction) {
+      const lumenUserId = getUserId(req);
+      emitExperimentCompleted({
+        lumenUserId,
+        experimentId: updated.id,
+        hypothesis: updated.hypothesis,
+        observation: updated.observation,
+        meaningExtraction: updated.meaningExtraction,
+      }).catch((e: unknown) => console.error('[praxis/emitExperimentCompleted]', e));
+    }
     res.json(updated);
   });
 
@@ -149,6 +231,15 @@ export function registerRoutes(httpServer: Server, app: Express) {
     const result = insertDoctrineSchema.safeParse(req.body);
     if (!result.success) return res.status(400).json({ error: result.error.flatten() });
     const doctrine = storage.createDoctrine(result.data, getUserId(req));
+    // Fire-and-forget: emit to Lumen when a doctrine is crystallized
+    const lumenUserId = getUserId(req);
+    emitDoctrineCrystallized({
+      lumenUserId,
+      doctrineId: doctrine.id,
+      title: doctrine.statement,
+      description: doctrine.notes || doctrine.statement,
+      certainty: doctrine.status,
+    }).catch((e: unknown) => console.error('[praxis/emitDoctrineCrystallized]', e));
     res.status(201).json(doctrine);
   });
 
@@ -184,6 +275,15 @@ export function registerRoutes(httpServer: Server, app: Express) {
     const result = insertTensionSchema.safeParse(req.body);
     if (!result.success) return res.status(400).json({ error: result.error.flatten() });
     const tension = storage.createTension(result.data, getUserId(req));
+    // Fire-and-forget: emit to Lumen when a tension is discovered
+    const lumenUserId = getUserId(req);
+    emitTensionDiscovered({
+      lumenUserId,
+      tensionId: tension.id,
+      poleA: tension.poleA,
+      poleB: tension.poleB,
+      insight: tension.insight,
+    }).catch((e: unknown) => console.error('[praxis/emitTensionDiscovered]', e));
     res.status(201).json(tension);
   });
 

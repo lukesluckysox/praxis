@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import BottomNav from "./BottomNav";
 import { Link, useLocation } from "wouter";
 import { useTheme } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
@@ -107,7 +108,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className="w-60 flex-shrink-0 flex flex-col border-r border-border">
+      <aside className="hidden md:flex w-60 flex-shrink-0 flex-col border-r border-border">
         {/* Brand */}
         <div className="flex items-center gap-3 px-5 py-5 border-b border-border">
           <PraxisLogo />
@@ -184,9 +185,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto pb-20 md:pb-0">
         {children}
       </main>
+      <BottomNav />
     </div>
   );
 }

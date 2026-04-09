@@ -1,6 +1,8 @@
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
 import { eq, desc, and } from "drizzle-orm";
+import path from "path";
+import fs from "fs";
 import {
   experiments,
   doctrines,
@@ -13,7 +15,23 @@ import {
   type InsertTension,
 } from "@shared/schema";
 
-const sqlite = new Database("praxis.db");
+const dbPath = process.env.RAILWAY_VOLUME_MOUNT_PATH
+  ? `${process.env.RAILWAY_VOLUME_MOUNT_PATH}/praxis.db`
+  : path.resolve(process.cwd(), "praxis.db");
+
+fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+
+const volumeSet = !!process.env.RAILWAY_VOLUME_MOUNT_PATH;
+console.log(`[praxis/db] SQLite path: ${dbPath}`);
+console.log(`[praxis/db] RAILWAY_VOLUME_MOUNT_PATH: ${process.env.RAILWAY_VOLUME_MOUNT_PATH ?? '(NOT SET)'}`);
+console.log(`[praxis/db] Persistent volume: ${volumeSet ? 'YES' : 'NO — data will be lost on redeploy'}`);
+if (!volumeSet) {
+  console.warn('[praxis/db] ⚠️  Set RAILWAY_VOLUME_MOUNT_PATH in Railway Variables to persist data across deploys.');
+}
+const dbExists = fs.existsSync(dbPath);
+console.log(`[praxis/db] DB file exists: ${dbExists}${dbExists ? ` (${(fs.statSync(dbPath).size / 1024).toFixed(1)} KB)` : ' — will create fresh'}`);
+
+const sqlite = new Database(dbPath);
 const db = drizzle(sqlite);
 
 // Run migrations

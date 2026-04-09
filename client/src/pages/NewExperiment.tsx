@@ -54,8 +54,16 @@ export default function NewExperiment() {
   const [step, setStep] = useState(0);
 
   // Parse ?from=<id> for Modify flow (pre-fill from a proposed experiment)
+  // Hash router puts query params inside the hash fragment (e.g. /#/experiments/new?from=123)
   const fromId = typeof window !== "undefined"
-    ? new URLSearchParams(window.location.search).get("from")
+    ? (() => {
+        const hash = window.location.hash;
+        const qIndex = hash.indexOf("?");
+        if (qIndex !== -1) {
+          return new URLSearchParams(hash.slice(qIndex)).get("from");
+        }
+        return new URLSearchParams(window.location.search).get("from");
+      })()
     : null;
 
   const { data: nextTrial } = useQuery<{ trialNumber: number }>({
@@ -122,7 +130,7 @@ export default function NewExperiment() {
   };
 
   return (
-    <div className="p-8 max-w-xl">
+    <div className="p-4 md:p-8 max-w-xl">
       {/* Back */}
       <Link href="/experiments">
         <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-6 transition-colors">
@@ -196,7 +204,7 @@ export default function NewExperiment() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs uppercase tracking-widest text-muted-foreground/70">
-                      Signal Origin
+                      Origin
                     </FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
@@ -208,9 +216,9 @@ export default function NewExperiment() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="manual">Manual — self-initiated</SelectItem>
-                        <SelectItem value="liminal">Liminal — from unresolved belief</SelectItem>
-                        <SelectItem value="parallax">Parallax — from behavioral pattern</SelectItem>
+                        <SelectItem value="manual">Self-initiated</SelectItem>
+                        <SelectItem value="liminal">From an unresolved belief</SelectItem>
+                        <SelectItem value="parallax">From a behavioral pattern</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

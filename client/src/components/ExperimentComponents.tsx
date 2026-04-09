@@ -61,10 +61,10 @@ export function PhaseDot({ status }: { status: string }) {
 // ── Source Tag ────────────────────────────────────────────────────────────
 
 const SOURCE_CONFIG = {
-  liminal: { label: "Liminal", color: "text-purple-400 dark:text-purple-300" },
-  parallax: { label: "Parallax", color: "text-teal-500 dark:text-teal-400" },
-  lumen_push: { label: "Lumen", color: "text-yellow-400 dark:text-yellow-300" },
-  manual: { label: "Manual", color: "text-muted-foreground" },
+  liminal: { label: "From inquiry", color: "text-purple-400 dark:text-purple-300" },
+  parallax: { label: "From patterns", color: "text-teal-500 dark:text-teal-400" },
+  lumen_push: { label: "From reflections", color: "text-yellow-400 dark:text-yellow-300" },
+  manual: { label: "Your experiment", color: "text-muted-foreground" },
 };
 
 export function SourceTag({ source }: { source: string }) {

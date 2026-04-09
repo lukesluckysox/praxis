@@ -126,7 +126,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 px-3 py-4 space-y-0.5">
           {navItems.map(({ href, label, icon: Icon }) => {
             const isActive = href === "/"
-              ? location === "/"
+              ? location === "/" || location === ""
               : location.startsWith(href);
             return (
               <Link key={href} href={href}>
@@ -185,7 +185,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto pb-20 md:pb-0">
+      <main className="flex-1 overflow-auto pb-24 md:pb-0">
         {children}
       </main>
       <BottomNav />

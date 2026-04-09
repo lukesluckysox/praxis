@@ -10,6 +10,7 @@ import { formatDateShort } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { ErrorCard } from "@/components/ErrorCard";
 
 type Filter = "all" | "active" | "observing" | "completed" | "archived";
 
@@ -54,8 +55,8 @@ function ProposedOnboarding({ show }: { show: boolean }) {
           </button>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          When Parallax detects a pattern in your behavior — a trend, an oscillation, a discrepancy — it suggests
-          experiments you can run in your actual life. You decide whether to accept, modify, or dismiss.
+          When patterns emerge from your reflections — a trend, an oscillation, a discrepancy — experiments are
+          suggested that you can run in your actual life. You decide whether to accept, modify, or dismiss.
         </p>
       </div>
     </div>
@@ -67,7 +68,7 @@ export default function Experiments() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const { data: experiments, isLoading } = useQuery<Experiment[]>({
+  const { data: experiments, isLoading, isError } = useQuery<Experiment[]>({
     queryKey: ["/api/experiments"],
   });
 
@@ -138,7 +139,7 @@ export default function Experiments() {
   }) ?? [];
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 md:p-8 max-w-3xl">
       <div className="flex items-start justify-between mb-8">
         <div>
           <h2 className="font-display text-xl font-semibold text-foreground mb-1">
@@ -263,7 +264,9 @@ export default function Experiments() {
       </div>
 
       {/* List */}
-      {isLoading ? (
+      {isError ? (
+        <ErrorCard message="Could not load experiments." onRetry={() => window.location.reload()} />
+      ) : isLoading ? (
         <div className="space-y-3">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-28 w-full rounded-md" />)}
         </div>

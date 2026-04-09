@@ -158,6 +158,30 @@ export function registerRoutes(httpServer: Server, app: Express) {
     }
   });
 
+  // ─── Internal: stats for Lumen dashboard state cards ──────────────────────
+  app.get('/api/internal/stats', (req: any, res: any) => {
+    const token = req.headers['x-lumen-internal-token'];
+    const expected = process.env.LUMEN_INTERNAL_TOKEN || process.env.JWT_SECRET || '4gLtMuM38OkYGIpM1SCD+QQLgBPqgrKFB3aZeObkaqobhpeFOCV3NkAMW2dyOS17';
+    if (!token || token !== expected) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+      const userId = (req.query.userId as string) || '1';
+      const experiments = storage.getExperiments(userId);
+      const doctrines = storage.getDoctrines(userId);
+      const tensions = storage.getTensions(userId);
+      return res.json({
+        experimentCount: experiments.filter(e => e.status === 'active' || e.status === 'proposed').length,
+        totalExperiments: experiments.length,
+        doctrineCount: doctrines.length,
+        tensionCount: tensions.length,
+      });
+    } catch (err: any) {
+      console.error('[praxis/internal/stats]', err);
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── Auth guard for all /api/* except /api/auth/* ─────────────────────────
   app.use('/api', (req: any, res: any, next: any) => {
     if (req.path.startsWith('/auth/') || req.path === '/health' || req.path.startsWith('/internal/')) return next();

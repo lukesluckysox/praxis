@@ -53,6 +53,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   if (status === 'unauthed') {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#191b2a', color: '#F4F5F8', fontFamily: 'sans-serif', padding: '1.5rem' }}>
+        <a href="https://lumen-os.up.railway.app" style={{ position: 'absolute', top: '1.25rem', left: '1.5rem', fontSize: '0.8125rem', color: 'rgba(200,204,213,0.45)', textDecoration: 'none', letterSpacing: '0.04em' }}>◁ Lumen</a>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '2.5rem 2rem', border: '1px solid rgba(255,209,102,0.1)', borderRadius: '8px', background: 'rgba(255,255,255,0.02)' }}>
           <p style={{ color: '#c4943e', fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}>Praxis</p>
           <p style={{ color: '#C8CCD5', fontSize: '1rem' }}>The laboratory opens from within Lumen.</p>

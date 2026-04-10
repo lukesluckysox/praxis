@@ -72,18 +72,24 @@ export default function Experiments() {
     queryKey: ["/api/experiments"],
   });
 
-  // ── Toast: show once per session when proposed experiments exist ──────────
+  // ── Loop toast: show once per session when recent inbound experiments exist ──
   useEffect(() => {
-    if (!experiments) return;
-    const proposed = experiments.filter(e => e.status === "proposed");
-    if (proposed.length === 0) return;
     const key = "praxis_loop_toast_shown";
     if (sessionStorage.getItem(key)) return;
-    sessionStorage.setItem(key, "1");
-    toast({
-      title: `The Loop has ${proposed.length} proposed experiment${proposed.length === 1 ? "" : "s"} for you.`,
-    });
-  }, [experiments, toast]);
+    fetch("/api/loop/recent-inbound")
+      .then(r => r.ok ? r.json() : null)
+      .then((data: { events: { count: number }[] } | null) => {
+        if (!data?.events?.length) return;
+        const count = data.events[0].count;
+        if (count <= 0) return;
+        sessionStorage.setItem(key, "1");
+        const msg = count === 1
+          ? "A hypothesis arrived from the Loop for testing."
+          : `${count} hypotheses arrived from the Loop for testing.`;
+        toast({ title: msg, duration: 4000 });
+      })
+      .catch(() => {});
+  }, [toast]);
 
   // ── Mutations ──────────────────────────────────────────────────────────────
 

@@ -265,6 +265,23 @@ export function registerRoutes(httpServer: Server, app: Express) {
     requireAuth(req, res, next);
   });
 
+  // ── Loop: recent inbound experiments ────────────────────────────────────
+
+  app.get("/api/loop/recent-inbound", (req: any, res: any) => {
+    const userId = getUserId(req);
+    const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
+    const rows = sqlite.prepare(
+      `SELECT COUNT(*) as count, MAX(created_at) as latestAt
+       FROM experiments
+       WHERE user_id = ? AND status = 'proposed' AND created_at > ?`
+    ).get(userId, twoHoursAgo) as { count: number; latestAt: number | null };
+
+    const events = rows.count > 0
+      ? [{ source: "loop", type: "proposed_experiment", count: rows.count, latestAt: rows.latestAt }]
+      : [];
+    res.json({ events });
+  });
+
   // ── Experiments ────────────────────────────────────────────────────────
 
   app.get("/api/experiments", (req: any, res: any) => {

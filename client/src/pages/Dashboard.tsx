@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,6 +8,7 @@ import type { Experiment, Doctrine, Tension } from "@shared/schema";
 import { StatusBadge, PhaseDot } from "@/components/ExperimentComponents";
 import { ErrorCard } from "@/components/ErrorCard";
 import { formatDate, getTensionLabel } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface Summary {
   experiments: { total: number; active: number; observing: number; completed: number };
@@ -15,6 +17,7 @@ interface Summary {
 }
 
 export default function Dashboard() {
+  const { toast } = useToast();
   const { data: summary, isLoading: summaryLoading, isError: summaryError } = useQuery<Summary>({
     queryKey: ["/api/summary"],
   });
@@ -27,6 +30,25 @@ export default function Dashboard() {
   const { data: tensions, isLoading: tensionLoading, isError: tensionError } = useQuery<Tension[]>({
     queryKey: ["/api/tensions"],
   });
+
+  // ── Loop toast: show once per session when recent inbound experiments exist ──
+  useEffect(() => {
+    const key = "praxis_loop_toast_shown";
+    if (sessionStorage.getItem(key)) return;
+    fetch("/api/loop/recent-inbound")
+      .then(r => r.ok ? r.json() : null)
+      .then((data: { events: { count: number }[] } | null) => {
+        if (!data?.events?.length) return;
+        const count = data.events[0].count;
+        if (count <= 0) return;
+        sessionStorage.setItem(key, "1");
+        const msg = count === 1
+          ? "A hypothesis arrived from the Loop for testing."
+          : `${count} hypotheses arrived from the Loop for testing.`;
+        toast({ title: msg, duration: 4000 });
+      })
+      .catch(() => {});
+  }, [toast]);
 
   if (summaryError && expError && docError && tensionError) {
     return (

@@ -202,3 +202,6 @@ class Storage implements IStorage {
 }
 
 export const storage = new Storage();
+
+// Expose raw sqlite for internal routes that need ad-hoc queries
+export { sqlite };

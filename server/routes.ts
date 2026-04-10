@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import type { Server } from "http";
-import { storage } from "./storage";
+import { storage, sqlite } from "./storage";
 import { requireAuth, getUserId, verifyLumenToken } from "./auth";
 import { insertExperimentSchema, insertDoctrineSchema, insertTensionSchema } from "@shared/schema";
 import { z } from "zod";
@@ -178,6 +178,30 @@ export function registerRoutes(httpServer: Server, app: Express) {
       });
     } catch (err: any) {
       console.error('[praxis/internal/stats]', err);
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ─── Internal: list users for Lumen Oracle ────────────────────────────────
+  app.get('/api/internal/users', (req: any, res: any) => {
+    const token = req.headers['x-lumen-internal-token'];
+    const expected = process.env.LUMEN_INTERNAL_TOKEN || process.env.JWT_SECRET || '4gLtMuM38OkYGIpM1SCD+QQLgBPqgrKFB3aZeObkaqobhpeFOCV3NkAMW2dyOS17';
+    if (!token || token !== expected) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+      // Praxis has no users table — derive unique users from experiments
+      const rows = sqlite.prepare(
+        `SELECT DISTINCT user_id FROM experiments ORDER BY user_id`
+      ).all() as any[];
+      return res.json({
+        users: rows.map((r: any) => ({
+          username: 'user-' + r.user_id,
+          createdAt: null,
+        })),
+      });
+    } catch (err: any) {
+      console.error('[praxis/internal/users]', err);
       return res.status(500).json({ error: err.message });
     }
   });

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { Skeleton } from "@/components/ui/skeleton";
+import { TensionCardSkeleton } from "@/components/Skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -252,7 +252,9 @@ export default function Tensions() {
         <ErrorCard message="Could not load tensions." onRetry={() => window.location.reload()} />
       ) : isLoading ? (
         <div className="space-y-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-28 w-full rounded-md" />)}
+          <TensionCardSkeleton />
+          <TensionCardSkeleton />
+          <TensionCardSkeleton />
         </div>
       ) : tensions?.length === 0 ? (
         <div className="border border-dashed border-border rounded-md py-16 text-center">

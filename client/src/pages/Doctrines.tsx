@@ -4,7 +4,7 @@ import { Plus, BookOpen, Pencil, Trash2, Save, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DoctrineCardSkeleton } from "@/components/Skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
@@ -211,7 +211,9 @@ export default function Doctrines() {
         <ErrorCard message="Could not load doctrines." onRetry={() => window.location.reload()} />
       ) : isLoading ? (
         <div className="space-y-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full rounded-md" />)}
+          <DoctrineCardSkeleton />
+          <DoctrineCardSkeleton />
+          <DoctrineCardSkeleton />
         </div>
       ) : doctrines?.length === 0 ? (
         <div className="border border-dashed border-border rounded-md py-16 text-center">

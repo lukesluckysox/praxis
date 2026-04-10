@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { Plus, CheckCircle2, Pencil, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { FilterPillsSkeleton, ExperimentCardSkeleton } from "@/components/Skeleton";
 import { StatusBadge, PhaseDot, PhaseProgress, SourceTag } from "@/components/ExperimentComponents";
 import type { Experiment } from "@shared/schema";
 import { formatDateShort } from "@/lib/utils";
@@ -246,35 +246,41 @@ export default function Experiments() {
       )}
 
       {/* Filters */}
-      <div className="flex items-center gap-1 mb-6 flex-wrap">
-        {filters.map(f => (
-          <button
-            key={f.key}
-            data-testid={`filter-${f.key}`}
-            onClick={() => setActiveFilter(f.key)}
-            className={cn(
-              "px-3 py-1 text-xs rounded font-medium transition-colors",
-              activeFilter === f.key
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
-            )}
-          >
-            {f.label}
-            {f.key !== "all" && experiments && (
-              <span className="ml-1.5 text-muted-foreground/60">
-                {experiments.filter(e => e.status === f.key).length}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+      {isLoading ? (
+        <FilterPillsSkeleton />
+      ) : (
+        <div className="flex items-center gap-1 mb-6 flex-wrap">
+          {filters.map(f => (
+            <button
+              key={f.key}
+              data-testid={`filter-${f.key}`}
+              onClick={() => setActiveFilter(f.key)}
+              className={cn(
+                "px-3 py-1 text-xs rounded font-medium transition-colors",
+                activeFilter === f.key
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
+              )}
+            >
+              {f.label}
+              {f.key !== "all" && experiments && (
+                <span className="ml-1.5 text-muted-foreground/60">
+                  {experiments.filter(e => e.status === f.key).length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* List */}
       {isError ? (
         <ErrorCard message="Could not load experiments." onRetry={() => window.location.reload()} />
       ) : isLoading ? (
         <div className="space-y-3">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-28 w-full rounded-md" />)}
+          <ExperimentCardSkeleton />
+          <ExperimentCardSkeleton />
+          <ExperimentCardSkeleton />
         </div>
       ) : filtered.length === 0 ? (
         <div className="border border-dashed border-border rounded-md py-16 text-center">

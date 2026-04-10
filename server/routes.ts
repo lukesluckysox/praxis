@@ -17,6 +17,17 @@ export function registerRoutes(httpServer: Server, app: Express) {
       const lumenUserId = String(payload.userId);
       req.session.userId = lumenUserId;
       req.session.username = payload.username;
+
+      // Upsert into praxis_users so Oracle can see them
+      try {
+        sqlite.prepare(
+          `INSERT INTO praxis_users (id, username, email) VALUES (?, ?, ?)
+           ON CONFLICT(id) DO UPDATE SET username = excluded.username`
+        ).run(lumenUserId, payload.username || null, (payload as any).email || null);
+      } catch (e: any) {
+        console.error('[praxis/sso] upsert user error:', e.message);
+      }
+
       req.session.save((err: unknown) => {
         if (err) console.error('[praxis/sso] session save error:', err);
         res.redirect('/#/');
@@ -190,18 +201,60 @@ export function registerRoutes(httpServer: Server, app: Express) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     try {
-      // Praxis has no users table — derive unique users from experiments
-      const rows = sqlite.prepare(
-        `SELECT DISTINCT user_id FROM experiments ORDER BY user_id`
-      ).all() as any[];
+      const users = storage.getAllUsers();
       return res.json({
-        users: rows.map((r: any) => ({
-          username: 'user-' + r.user_id,
-          createdAt: null,
+        users: users.map((u: any) => ({
+          username: u.username || ('user-' + u.id),
+          email: u.email || null,
+          plan: u.plan || 'free',
+          createdAt: u.createdAt ? new Date(u.createdAt * 1000).toISOString() : null,
         })),
       });
     } catch (err: any) {
       console.error('[praxis/internal/users]', err);
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ─── Internal: delete user (called by Lumen Oracle) ─────────────────────────
+  app.post('/api/internal/delete-user', (req: any, res: any) => {
+    const token = req.headers['x-lumen-internal-token'];
+    const expected = process.env.LUMEN_INTERNAL_TOKEN || process.env.JWT_SECRET || '4gLtMuM38OkYGIpM1SCD+QQLgBPqgrKFB3aZeObkaqobhpeFOCV3NkAMW2dyOS17';
+    if (!token || token !== expected) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+      const { username, email } = req.body || {};
+      if (!username && !email) return res.status(400).json({ error: 'username or email required' });
+      const deleted = storage.deleteUserByIdentifier(username, email);
+      if (!deleted) return res.status(404).json({ ok: false, reason: 'User not found in Praxis' });
+      console.log(`[delete-user] Deleted Praxis user: ${username || email}`);
+      return res.json({ ok: true });
+    } catch (err: any) {
+      console.error('[praxis/internal/delete-user]', err);
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ─── Internal: sync plan (called by Lumen Oracle) ───────────────────────────
+  app.post('/api/internal/sync-plan', (req: any, res: any) => {
+    const token = req.headers['x-lumen-internal-token'];
+    const expected = process.env.LUMEN_INTERNAL_TOKEN || process.env.JWT_SECRET || '4gLtMuM38OkYGIpM1SCD+QQLgBPqgrKFB3aZeObkaqobhpeFOCV3NkAMW2dyOS17';
+    if (!token || token !== expected) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+      const { username, email, plan } = req.body || {};
+      if (!plan || !['free', 'pro', 'founder'].includes(plan)) {
+        return res.status(400).json({ error: 'Plan must be free, pro, or founder' });
+      }
+      if (!username && !email) return res.status(400).json({ error: 'username or email required' });
+      const synced = storage.syncPlan(username, email, plan);
+      if (!synced) return res.status(404).json({ ok: false, reason: 'User not found in Praxis' });
+      console.log(`[sync-plan] Updated Praxis user ${username || email} to plan=${plan}`);
+      return res.json({ ok: true, plan });
+    } catch (err: any) {
+      console.error('[praxis/internal/sync-plan]', err);
       return res.status(500).json({ error: err.message });
     }
   });

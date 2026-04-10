@@ -274,14 +274,14 @@ export default function Experiments() {
         <div className="border border-dashed border-border rounded-md py-16 text-center">
           <p className="text-sm text-muted-foreground mb-4">
             {activeFilter === "all"
-              ? "No experiments yet. The laboratory awaits."
+              ? "No experiments yet. Design a test for a belief, observe what happens, and let the results inform what I hold true."
               : `No ${activeFilter} experiments.`}
           </p>
           {activeFilter === "all" && (
             <Link href="/experiments/new">
               <Button size="sm" variant="outline" className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
                 <Plus size={13} />
-                Begin first experiment
+                Design my first experiment
               </Button>
             </Link>
           )}

@@ -143,7 +143,7 @@ export default function Dashboard() {
             </div>
           ) : activeExperiments.length === 0 ? (
             <div className="border border-dashed border-border rounded-md p-6 text-center">
-              <p className="text-sm text-muted-foreground mb-3">No active experiments.</p>
+              <p className="text-sm text-muted-foreground mb-3">No active experiments. Start one to test a belief — results flow into Axiom as proposals for governing principles.</p>
               <Link href="/experiments/new">
                 <Button size="sm" variant="outline" className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
                   <Plus size={13} />

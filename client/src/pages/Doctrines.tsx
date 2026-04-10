@@ -220,8 +220,7 @@ export default function Doctrines() {
             No doctrines yet.
           </p>
           <p className="text-xs text-muted-foreground/60 max-w-sm mx-auto">
-            Principles you've validated through experimentation will be collected here.
-            You can also record one directly from your own understanding.
+            When I validate a belief through experimentation, the resulting principle lands here. I can also record one directly from my own understanding.
           </p>
         </div>
       ) : (

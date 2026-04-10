@@ -259,8 +259,7 @@ export default function Tensions() {
           <GitFork size={24} className="mx-auto mb-3 text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground mb-1">No tensions mapped yet.</p>
           <p className="text-xs text-muted-foreground/60 max-w-sm mx-auto">
-            Points of productive contradiction will surface as your experiments reveal
-            the gravitational poles shaping your decisions.
+            As my experiments reveal competing truths, productive contradictions will surface here — the gravitational poles shaping my decisions.
           </p>
         </div>
       ) : (

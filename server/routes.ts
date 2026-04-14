@@ -461,6 +461,62 @@ export function registerRoutes(httpServer: Server, app: Express) {
     }
   });
 
+  // ── Refractions (proxy to Parallax internal API) ────────────────────────
+
+  const PARALLAX_API_URL = process.env.PARALLAX_API_URL || '';
+  const INTERNAL_TOKEN = process.env.LUMEN_INTERNAL_TOKEN || process.env.JWT_SECRET || '';
+
+  app.get("/api/refractions/experiments", async (req: any, res: any) => {
+    if (!PARALLAX_API_URL) {
+      return res.json({ experiments: [] });
+    }
+    try {
+      const userId = getUserId(req);
+      const r = await fetch(`${PARALLAX_API_URL}/api/internal/refractions/experiments?userId=${userId}`, {
+        headers: { 'x-lumen-internal-token': INTERNAL_TOKEN },
+      });
+      if (!r.ok) return res.json({ experiments: [] });
+      const data = await r.json();
+      return res.json(data);
+    } catch {
+      return res.json({ experiments: [] });
+    }
+  });
+
+  app.get("/api/refractions/conditions", async (req: any, res: any) => {
+    if (!PARALLAX_API_URL) {
+      return res.json({ conditions: [] });
+    }
+    try {
+      const userId = getUserId(req);
+      const r = await fetch(`${PARALLAX_API_URL}/api/internal/refractions/conditions?userId=${userId}`, {
+        headers: { 'x-lumen-internal-token': INTERNAL_TOKEN },
+      });
+      if (!r.ok) return res.json({ conditions: [] });
+      const data = await r.json();
+      return res.json(data);
+    } catch {
+      return res.json({ conditions: [] });
+    }
+  });
+
+  app.get("/api/refractions/recovery", async (req: any, res: any) => {
+    if (!PARALLAX_API_URL) {
+      return res.json({ recovery: null });
+    }
+    try {
+      const userId = getUserId(req);
+      const r = await fetch(`${PARALLAX_API_URL}/api/internal/refractions/recovery?userId=${userId}`, {
+        headers: { 'x-lumen-internal-token': INTERNAL_TOKEN },
+      });
+      if (!r.ok) return res.json({ recovery: null });
+      const data = await r.json();
+      return res.json(data);
+    } catch {
+      return res.json({ recovery: null });
+    }
+  });
+
   // ── Summary ────────────────────────────────────────────────────────────
 
   app.get("/api/summary", (req: any, res: any) => {

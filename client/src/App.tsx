@@ -12,6 +12,7 @@ import ExperimentDetail from "@/pages/ExperimentDetail";
 import NewExperiment from "@/pages/NewExperiment";
 import Doctrines from "@/pages/Doctrines";
 import Tensions from "@/pages/Tensions";
+import DecisionExperiments from "@/pages/DecisionExperiments";
 import NotFound from "@/pages/not-found";
 import Profile from "@/pages/Profile";
 
@@ -25,6 +26,7 @@ function AppRoutes() {
         <Route path="/experiments/:id" component={ExperimentDetail} />
         <Route path="/doctrines" component={Doctrines} />
         <Route path="/tensions" component={Tensions} />
+        <Route path="/decision-experiments" component={DecisionExperiments} />
         <Route path="/profile" component={Profile} />
         <Route component={NotFound} />
       </Switch>

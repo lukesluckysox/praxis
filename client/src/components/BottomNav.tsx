@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, FlaskConical, BookOpen, GitFork, Plus } from "lucide-react";
+import { LayoutDashboard, FlaskConical, BookOpen, GitFork, Plus, Scale } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/", icon: LayoutDashboard, label: "Lab" },
@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { href: "/experiments/new", icon: Plus, label: "New", isCenter: true },
   { href: "/doctrines", icon: BookOpen, label: "Doctrines" },
   { href: "/tensions", icon: GitFork, label: "Tensions" },
+  { href: "/decision-experiments", icon: Scale, label: "Decisions" },
 ];
 
 export default function BottomNav() {

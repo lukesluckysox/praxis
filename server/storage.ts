@@ -270,6 +270,8 @@ class Storage implements IStorage {
     if (!user) return false;
     sqlite.prepare(`UPDATE praxis_users SET plan = ? WHERE id = ?`).run(plan, user.id);
     return true;
+  }
+
   // ── Decisions ───────────────────────────────────────────────────────────
 
   getDecisions(userId: string): Decision[] {

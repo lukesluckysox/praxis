@@ -3,8 +3,7 @@ import BottomNav from "./BottomNav";
 import { Link, useLocation } from "wouter";
 import { useTheme } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
-import { Sun, Moon, FlaskConical, BookOpen, GitFork, LayoutDashboard, Plus, Gem } from "lucide-react";
-import { Sun, Moon, FlaskConical, BookOpen, GitFork, LayoutDashboard, Plus, Scale } from "lucide-react";
+import { Sun, Moon, FlaskConical, BookOpen, GitFork, LayoutDashboard, Plus, Gem, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [

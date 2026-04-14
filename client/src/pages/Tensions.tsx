@@ -18,11 +18,8 @@ import { formatDate, getTensionLabel } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { GitFork, ExternalLink } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorCard } from "@/components/ErrorCard";
-import { cn } from "@/lib/utils";
 
 // Axiom tension shape (different from Praxis local schema)
 interface AxiomTension {

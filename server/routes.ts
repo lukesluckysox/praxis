@@ -281,6 +281,8 @@ export function registerRoutes(httpServer: Server, app: Express) {
       ? [{ source: "loop", type: "proposed_experiment", count: rows.count, latestAt: rows.latestAt }]
       : [];
     res.json({ events });
+  });
+
   // ─── Proxy: fetch tensions from Axiom (canonical source) ──────────────────
   app.get('/api/axiom-tensions', async (req: any, res: any) => {
     const AXIOM_URL = process.env.AXIOM_TOOL_URL || process.env.AXIOM_API_URL;
@@ -589,6 +591,9 @@ export function registerRoutes(httpServer: Server, app: Express) {
       return res.json(data);
     } catch {
       return res.json({ recovery: null });
+    }
+  });
+
   // ── Decisions ──────────────────────────────────────────────────────────
 
   app.post("/api/analyze-decision", async (req: any, res: any) => {

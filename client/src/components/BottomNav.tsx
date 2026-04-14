@@ -1,6 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, FlaskConical, BookOpen, GitFork, Gem } from "lucide-react";
-import { LayoutDashboard, FlaskConical, BookOpen, GitFork, Plus, Scale } from "lucide-react";
+import { LayoutDashboard, FlaskConical, BookOpen, GitFork, Gem, Plus, Scale } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/", icon: LayoutDashboard, label: "Lab" },

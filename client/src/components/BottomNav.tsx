@@ -1,62 +1,65 @@
-import { Link, useLocation } from "wouter";
-import { LayoutDashboard, FlaskConical, BookOpen, GitFork, Gem, Scale, CircleDot } from "lucide-react";
-
-const NAV_ITEMS = [
-  { href: "/", icon: LayoutDashboard, label: "Lab" },
-  { href: "/experiments", icon: FlaskConical, label: "Experiments" },
-  { href: "/refractions", icon: Gem, label: "Refractions" },
-  { href: "/doctrines", icon: BookOpen, label: "Doctrines" },
-  { href: "/tensions", icon: GitFork, label: "Tensions" },
-  { href: "/decision-experiments", icon: Scale, label: "Decisions" },
-];
+import { Link } from "wouter";
+import { Home, CircleDot, Compass, FlaskConical, Zap, Ghost } from "lucide-react";
 
 const LUMEN_HUB_URL = "https://lumen-os.up.railway.app";
+const CURRENT_APP = "praxis";
+
+const APP_NAV = [
+  { key: "parallax", href: "https://parallaxapp.up.railway.app/", icon: Compass, label: "Parallax" },
+  { key: "praxis", href: "https://praxis-app.up.railway.app/", icon: FlaskConical, label: "Praxis" },
+  { key: "axiom", href: "https://axiomtool-production.up.railway.app/#/", icon: Zap, label: "Axiom" },
+  { key: "liminal", href: "https://liminal-app.up.railway.app/", icon: Ghost, label: "Liminal" },
+];
 
 export default function BottomNav() {
-  const [location] = useLocation();
-
   return (
     <nav
       data-testid="nav-bottom"
       className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-background/90 backdrop-blur-md md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
-      <div className="max-w-2xl mx-auto flex items-center justify-around px-2">
+      {/* Top row: Lumen Home + App Home */}
+      <div className="flex border-b border-border/30">
         <a
           href={LUMEN_HUB_URL}
           data-testid="nav-lumen"
-          className="relative flex flex-col items-center justify-center gap-0.5 min-h-[44px] min-w-[44px] px-2 py-2 rounded-lg transition-all text-muted-foreground/40 hover:text-muted-foreground"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
         >
-          <CircleDot className="w-[18px] h-[18px]" strokeWidth={1.5} />
-          <span className="text-[10px] font-mono leading-tight text-muted-foreground/30">lumen</span>
+          <CircleDot className="w-3.5 h-3.5" strokeWidth={1.5} />
+          <span className="text-[10px] font-mono">lumen</span>
         </a>
-        {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
-          let isActive: boolean;
-          if (href === "/") {
-            isActive = location === href || location === "";
-          } else if (href === "/experiments") {
-            isActive = location === href || location.startsWith("/experiments/");
-          } else {
-            isActive = location === href || location.startsWith(href + "/");
-          }
+        <div className="w-px bg-border/30" />
+        <Link
+          href="/"
+          data-testid="nav-app-home"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+        >
+          <Home className="w-3.5 h-3.5" strokeWidth={1.5} />
+          <span className="text-[10px] font-mono">praxis</span>
+        </Link>
+      </div>
+
+      {/* Bottom row: 4 sub-apps */}
+      <div className="flex items-center justify-around px-2 py-1">
+        {APP_NAV.map(({ key, href, icon: Icon, label }) => {
+          const isSelf = key === CURRENT_APP;
           return (
-            <Link
-              key={href}
-              href={href}
-              data-testid={`nav-${label.toLowerCase()}`}
+            <a
+              key={key}
+              href={isSelf ? "/" : href}
+              data-testid={`nav-app-${key}`}
               className={`relative flex flex-col items-center justify-center gap-0.5 min-h-[44px] min-w-[44px] px-2 py-2 rounded-lg transition-all ${
-                isActive
-                  ? "text-primary"
+                isSelf
+                  ? "text-[#d4a03a]"
                   : "text-muted-foreground/40 hover:text-muted-foreground"
               }`}
+              {...(!isSelf ? { target: "_self" } : {})}
             >
-              <Icon className="w-[18px] h-[18px]" strokeWidth={isActive ? 2 : 1.5} />
-              <span className={`text-[10px] font-mono leading-tight ${
-                isActive ? "text-primary" : "text-muted-foreground/30"
-              }`}>
+              <Icon className="w-[18px] h-[18px]" strokeWidth={isSelf ? 2 : 1.5} />
+              <span className={`text-[10px] font-mono leading-tight ${isSelf ? "text-[#d4a03a]/80" : "text-muted-foreground/30"}`}>
                 {label.toLowerCase()}
               </span>
-            </Link>
+            </a>
           );
         })}
       </div>
